@@ -8,7 +8,6 @@
     "scripts": {
         "dev": "astro dev",
         "build": "astro build",
-        "build:pages": "astro build --site https://lunaticbaka9.github.io --base /LunaticBaka9/ --outDir docs",
         "preview": "astro preview",
         "astro": "astro"
     },
