@@ -5,7 +5,7 @@
 - 🎮 **游戏与前端开发：** 使用 **Vue 3**、**TypeScript** 与 **Pinia** 构建 Roguelike 核心机制与交互式网页游戏。
 - ⚙️ **后端与系统折腾：** 深入探索 **Java (Spring Boot)** 与 **C++**，热衷于 **Linux** 桌面环境深度定制。
 - ☕ **日常续航：** 靠深烘意式浓缩咖啡豆与深夜 Debug。
-- **个人博客**：lunaticbaka9.github.io/LunaticBaka9/
+- **个人博客**：[lunaticbaka9.github.io/LunaticBaka9/](lunaticbaka9.github.io/LunaticBaka9/)
 
 ---
 

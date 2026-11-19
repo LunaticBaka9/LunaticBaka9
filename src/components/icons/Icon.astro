@@ -1,0 +1,33 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+import { icons, type IconName } from './icons';
+
+interface Props extends HTMLAttributes<'svg'> {
+	name: IconName;
+	size?: number | string;
+}
+
+const { name, size = 32, width = size, height = size, ...rest } = Astro.props;
+const icon = icons[name];
+const strokeAttrs =
+	icon.mode === 'stroke'
+		? {
+				fill: 'none',
+				stroke: 'currentColor',
+				'stroke-width': '2',
+				'stroke-linecap': 'round' as const,
+				'stroke-linejoin': 'round' as const,
+			}
+		: {};
+---
+
+<svg
+	viewBox={icon.viewBox}
+	aria-hidden="true"
+	width={width}
+	height={height}
+	astro-icon={icon.astroIcon}
+	{...strokeAttrs}
+	{...rest}
+	set:html={icon.body}
+/>
