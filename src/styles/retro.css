@@ -1,0 +1,345 @@
+/**
+ * 模块用途：
+ *   极客复古（Geek Retro）全局视觉设计令牌（CSS Variables）与克制的基础排版样式。
+ *   以“线条 + 对比度 + 等宽/正文混搭”构建旧系统窗口与终端质感，避免全屏闪烁或过度动效。
+ *
+ * 使用方法：
+ *   1. 在全局布局组件（如 `src/layouts/BaseLayout.astro`）中引入：
+ *        import '../styles/retro.css';
+ *   2. 主题由根元素 `<html data-theme="night | light">` 控制，默认启用 `night` 黑夜模式。
+ *   3. 窗口卡片、状态栏、标签等组件直接消费 `--retro-*` 与 `--font-*` 变量，禁止硬编码色值。
+ *   4. 长文容器添加 `.retro-prose` 类即可获得 68ch 舒适行宽与等宽代码块/引用块排版。
+ */
+
+/* ==========================================================================
+   1. 字体与布局尺寸令牌（主题无关）
+   ========================================================================== */
+:root {
+	/* 标题、状态栏、标签与代码块使用等宽字体强化极客质感 */
+	--font-mono:
+		'JetBrains Mono', 'Fira Code', 'Maple Mono', 'Cascadia Mono', ui-monospace, SFMono-Regular,
+		Menlo, Monaco, Consolas, monospace;
+	/* 长篇正文搭配清晰无衬线字体，保证长时间阅读舒适度 */
+	--font-sans:
+		var(--font-atkinson, system-ui), -apple-system, BlinkMacSystemFont, 'PingFang SC',
+		'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+
+	/* 统一容器与阅读行宽 */
+	--retro-max-width: 1040px;
+	--retro-prose-width: 68ch;
+	--retro-radius: 3px;
+	--retro-border-width: 1px;
+}
+
+/* ==========================================================================
+   2. 默认主题：黑夜极客终端（night）
+   ========================================================================== */
+:root,
+:root[data-theme='night'] {
+	color-scheme: dark;
+
+	/* 兼容现有站点变量 */
+	--bg: #0b0e14;
+	--surface: #121721;
+	--surface-hover: #1b2332;
+	--accent: #7aa2f7;
+	--accent-dark: #a9c4ff;
+	--black: 230, 237, 243;
+	--gray: 148, 163, 184;
+	--gray-light: 35, 44, 60;
+	--gray-dark: 209, 217, 228;
+	--border: #2a3447;
+	--gray-gradient: rgba(18, 23, 33, 0.92), #0b0e14;
+	--header-shadow: 0 2px 0 rgba(0, 0, 0, 0.45);
+	--box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.55);
+
+	/* 复古窗口专属语义令牌 */
+	--retro-bg: #0b0e14;
+	--retro-bg-grid: rgba(122, 162, 247, 0.04);
+	--retro-panel: #121721;
+	--retro-panel-alt: #161d29;
+	--retro-titlebar: #1a2232;
+	--retro-border: #2c384e;
+	--retro-border-strong: #465878;
+	--retro-shadow: 3px 3px 0 #05070b;
+	--retro-inset: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+	/* 文本与状态高亮色 */
+	--retro-text: #d5dde8;
+	--retro-heading: #eef4fc;
+	--retro-muted: #8b9bb4;
+	--retro-accent: #7aa2f7;
+	--retro-accent-soft: rgba(122, 162, 247, 0.14);
+	--retro-signal: #73daca;
+	--retro-warn: #e0af68;
+	--retro-code-bg: #18202f;
+}
+
+/* ==========================================================================
+   3. 亮色主题：复古纸感工作站（light）
+   ========================================================================== */
+:root[data-theme='light'] {
+	color-scheme: light;
+
+	/* 兼容现有站点变量 */
+	--bg: #f3f1ea;
+	--surface: #fbfaf6;
+	--surface-hover: #eae6da;
+	--accent: #1d4ed8;
+	--accent-dark: #1e3a8a;
+	--black: 24, 28, 36;
+	--gray: 92, 102, 118;
+	--gray-light: 221, 217, 206;
+	--gray-dark: 38, 44, 54;
+	--border: #c5bfb0;
+	--gray-gradient: rgba(235, 231, 220, 0.8), #f3f1ea;
+	--header-shadow: 0 2px 0 rgba(24, 28, 36, 0.08);
+	--box-shadow: 4px 4px 0 rgba(24, 28, 36, 0.14);
+
+	/* 复古窗口专属语义令牌 */
+	--retro-bg: #f3f1ea;
+	--retro-bg-grid: rgba(24, 28, 36, 0.04);
+	--retro-panel: #fbfaf6;
+	--retro-panel-alt: #f0ede4;
+	--retro-titlebar: #e5e1d5;
+	--retro-border: #bdb7a8;
+	--retro-border-strong: #6d7380;
+	--retro-shadow: 3px 3px 0 rgba(24, 28, 36, 0.16);
+	--retro-inset: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+
+	/* 文本与状态高亮色 */
+	--retro-text: #262c36;
+	--retro-heading: #12161f;
+	--retro-muted: #5c6676;
+	--retro-accent: #1d4ed8;
+	--retro-accent-soft: rgba(29, 78, 216, 0.1);
+	--retro-signal: #0f766e;
+	--retro-warn: #b45309;
+	--retro-code-bg: #ebe7dc;
+}
+
+/* ==========================================================================
+   4. 基础重置与页面画布（克制微网格，无闪烁）
+   ========================================================================== */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	background-color: var(--retro-bg);
+	scroll-behavior: smooth;
+}
+
+body {
+	margin: 0;
+	padding: 0;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	font-family: var(--font-sans);
+	font-size: 16px;
+	line-height: 1.75;
+	color: var(--retro-text);
+	background-color: var(--retro-bg);
+	background-image:
+		linear-gradient(to right, var(--retro-bg-grid) 1px, transparent 1px),
+		linear-gradient(to bottom, var(--retro-bg-grid) 1px, transparent 1px);
+	background-size: 28px 28px;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+	transition:
+		background-color 0.2s ease,
+		color 0.2s ease;
+}
+
+main {
+	width: 100%;
+	max-width: var(--retro-max-width);
+	margin: 0 auto;
+	padding: 2rem 1.25rem 4rem;
+	flex: 1;
+}
+
+/* 标题采用等宽字体，与无衬线正文形成清晰层级 */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-family: var(--font-mono);
+	color: var(--retro-heading);
+	line-height: 1.3;
+	letter-spacing: -0.02em;
+	margin: 0 0 0.75rem;
+}
+
+h1 {
+	font-size: clamp(1.6rem, 3vw, 2.2rem);
+}
+
+h2 {
+	font-size: clamp(1.25rem, 2.2vw, 1.55rem);
+}
+
+h3 {
+	font-size: 1.15rem;
+}
+
+a {
+	color: var(--retro-accent);
+	text-underline-offset: 3px;
+}
+
+a:hover {
+	color: var(--accent-dark);
+}
+
+img {
+	max-width: 100%;
+	height: auto;
+	border-radius: var(--retro-radius);
+}
+
+code,
+pre,
+kbd,
+samp {
+	font-family: var(--font-mono);
+}
+
+code {
+	font-size: 0.88em;
+	padding: 0.12em 0.4em;
+	background-color: var(--retro-code-bg);
+	border: 1px solid var(--retro-border);
+	border-radius: var(--retro-radius);
+}
+
+pre {
+	padding: 1rem 1.25rem;
+	overflow-x: auto;
+	border: 1px solid var(--retro-border-strong);
+	border-radius: var(--retro-radius);
+	box-shadow: var(--retro-inset);
+	font-size: 0.9rem;
+	line-height: 1.6;
+}
+
+pre > code {
+	all: unset;
+	font-family: var(--font-mono);
+}
+
+blockquote {
+	margin: 1.5rem 0;
+	padding: 0.75rem 1rem;
+	border-left: 3px solid var(--retro-accent);
+	background: var(--retro-panel-alt);
+	color: var(--retro-muted);
+}
+
+hr {
+	border: none;
+	border-top: 1px dashed var(--retro-border-strong);
+	margin: 1.5rem 0;
+}
+
+/* ==========================================================================
+   5. 可复用复古基础类（等宽标签、按钮、长文阅读区）
+   ========================================================================== */
+.retro-mono {
+	font-family: var(--font-mono);
+}
+
+.retro-tag {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	padding: 0.18rem 0.55rem;
+	font-family: var(--font-mono);
+	font-size: 0.78rem;
+	line-height: 1.3;
+	color: var(--retro-text);
+	background: var(--retro-panel-alt);
+	border: 1px solid var(--retro-border);
+	border-radius: var(--retro-radius);
+	text-decoration: none;
+}
+
+.retro-tag--accent {
+	color: var(--retro-accent);
+	border-color: var(--retro-accent);
+	background: var(--retro-accent-soft);
+}
+
+.retro-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.45rem 0.85rem;
+	font-family: var(--font-mono);
+	font-size: 0.85rem;
+	color: var(--retro-heading);
+	background: var(--retro-panel-alt);
+	border: 1px solid var(--retro-border-strong);
+	border-radius: var(--retro-radius);
+	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.35);
+	text-decoration: none;
+	cursor: pointer;
+	transition:
+		border-color 0.15s ease,
+		background-color 0.15s ease,
+		transform 0.1s ease;
+}
+
+.retro-btn:hover {
+	border-color: var(--retro-accent);
+	color: var(--retro-accent);
+}
+
+.retro-btn:active {
+	transform: translate(1px, 1px);
+	box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.35);
+}
+
+/* 长篇正文阅读容器：限制在 68ch，保持舒适段落节奏 */
+.retro-prose {
+	max-width: var(--retro-prose-width);
+	margin: 0 auto;
+	font-size: 1.02rem;
+	line-height: 1.85;
+}
+
+.retro-prose p {
+	margin: 0 0 1.25rem;
+}
+
+.retro-prose h2,
+.retro-prose h3 {
+	margin-top: 2rem;
+	padding-bottom: 0.35rem;
+	border-bottom: 1px dashed var(--retro-border);
+}
+
+.sr-only {
+	border: 0;
+	padding: 0;
+	margin: 0;
+	position: absolute !important;
+	height: 1px;
+	width: 1px;
+	overflow: hidden;
+	clip: rect(1px 1px 1px 1px);
+	clip: rect(1px, 1px, 1px, 1px);
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+	main {
+		padding: 1.25rem 0.9rem 3rem;
+	}
+}

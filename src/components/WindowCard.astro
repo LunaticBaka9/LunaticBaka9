@@ -1,0 +1,148 @@
+---
+/**
+ * 模块用途：
+ *   极客复古风格的通用“窗口/面板外壳”组件（WindowCard）。
+ *   仅负责呈现旧系统标题栏、控制点、1px 线条边框与内容插槽，不包含任何业务或数据逻辑。
+ *
+ * 使用方法：
+ *   <WindowCard title="~/profile.sh" status="ONLINE">
+ *     <p>窗口主体内容</p>
+ *   </WindowCard>
+ *
+ *   可选具名插槽 `header-actions` 可向标题栏右侧注入链接或操作按钮：
+ *   <WindowCard title="featured-projects.dir">
+ *     <a slot="header-actions" href="/projects">cd ~/projects →</a>
+ *     ...
+ *   </WindowCard>
+ */
+
+export interface Props {
+	/** 窗口标题栏左侧显示的标题或伪路径 */
+	title: string;
+	/** 标题栏右侧可选状态标记（如 READY / 4 ITEMS） */
+	status?: string;
+	/** 语义化根标签，默认为 section */
+	as?: 'section' | 'article' | 'div' | 'aside';
+	/** 内容区是否使用默认内边距，默认 true */
+	padded?: boolean;
+	/** 允许调用方传入额外样式类 */
+	class?: string;
+}
+
+const {
+	title,
+	status,
+	as: Tag = 'section',
+	padded = true,
+	class: className = '',
+} = Astro.props;
+---
+
+<Tag class:list={['window-card', className]}>
+	<header class="window-titlebar">
+		<div class="window-title-group">
+			<span class="window-controls" aria-hidden="true">
+				<span class="ctrl-dot ctrl-dot--primary"></span>
+				<span class="ctrl-dot"></span>
+				<span class="ctrl-dot"></span>
+			</span>
+			<span class="window-title">{title}</span>
+		</div>
+		<div class="window-meta">
+			{status && <span class="window-status">{status}</span>}
+			<slot name="header-actions" />
+		</div>
+	</header>
+	<div class:list={['window-body', { 'window-body--padded': padded }]}>
+		<slot />
+	</div>
+</Tag>
+
+<style>
+	.window-card {
+		background: var(--retro-panel);
+		border: 1px solid var(--retro-border-strong);
+		border-radius: var(--retro-radius);
+		box-shadow: var(--retro-shadow), var(--retro-inset);
+		overflow: hidden;
+	}
+
+	.window-titlebar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		padding: 0.5rem 0.85rem;
+		background: var(--retro-titlebar);
+		border-bottom: 1px solid var(--retro-border);
+		font-family: var(--font-mono);
+		font-size: 0.82rem;
+		line-height: 1.2;
+		user-select: none;
+	}
+
+	.window-title-group {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		min-width: 0;
+	}
+
+	.window-controls {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		flex-shrink: 0;
+	}
+
+	.ctrl-dot {
+		width: 8px;
+		height: 8px;
+		border: 1px solid var(--retro-border-strong);
+		border-radius: 1px;
+		background: transparent;
+	}
+
+	.ctrl-dot--primary {
+		background: var(--retro-signal);
+		border-color: var(--retro-signal);
+	}
+
+	.window-title {
+		color: var(--retro-heading);
+		font-weight: 600;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.window-meta {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.65rem;
+		flex-shrink: 0;
+		color: var(--retro-muted);
+		font-size: 0.76rem;
+	}
+
+	.window-status {
+		padding: 0.1rem 0.4rem;
+		border: 1px solid var(--retro-border);
+		border-radius: 2px;
+		background: var(--retro-panel);
+		color: var(--retro-muted);
+	}
+
+	.window-body--padded {
+		padding: 1.25rem;
+	}
+
+	@media (max-width: 600px) {
+		.window-titlebar {
+			padding: 0.45rem 0.7rem;
+		}
+		.window-body--padded {
+			padding: 1rem;
+		}
+	}
+</style>

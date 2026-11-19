@@ -1,45 +1,112 @@
 ---
+/**
+ * 模块用途：
+ *   极客复古底部状态栏页脚组件（Footer）。
+ *   负责展示版权信息、构建状态标记与社交图标链接，数据通过 Props 注入（默认取 `consts.ts`）。
+ *
+ * 使用方法：
+ *   <Footer />
+ */
+
+import { SITE_TITLE, SOCIAL_LINKS, type SocialLink } from '../consts';
+import { withBase } from '../utils/paths';
 import Icon from './icons/Icon.astro';
 
-const today = new Date();
+export interface Props {
+	owner?: string;
+	socialLinks?: readonly SocialLink[];
+}
+
+const { owner = SITE_TITLE, socialLinks = SOCIAL_LINKS } = Astro.props;
+const currentYear = new Date().getFullYear();
 ---
 
-<footer>
-	&copy; {today.getFullYear()} LunaticBaka9.
-	<div class="social-links">
-		<a href="https://space.bilibili.com/97139029" target="_blank" rel="noopener noreferrer">
-			<span class="sr-only">Follow Me on Bilibili</span>
-			<Icon name="bilibili" size={32} />
-		</a>
-		<a href="https://twitter.com/Lunaticbaka9" target="_blank" rel="noopener noreferrer">
-			<span class="sr-only">Follow Me on Twitter</span>
-			<Icon name="twitter" size={32} />
-		</a>
-		<a href="https://github.com/LunaticBaka9" target="_blank" rel="noopener noreferrer">
-			<span class="sr-only">Go to LunaticBaka9's GitHub repo</span>
-			<Icon name="github" size={32} />
-		</a>
+<footer class="site-footer">
+	<div class="footer-inner">
+		<div class="footer-status">
+			<span class="status-dot" aria-hidden="true"></span>
+			<span>&copy; {currentYear} {owner}</span>
+			<span class="sep" aria-hidden="true">|</span>
+			<a href={withBase('/rss.xml')}>RSS</a>
+			<span class="sep" aria-hidden="true">|</span>
+			<a href={withBase('/timeline')}>~/timeline</a>
+		</div>
+
+		<div class="social-links">
+			{
+				socialLinks.map((link) => (
+					<a href={link.href} target="_blank" rel="noopener noreferrer" title={link.name}>
+						<span class="sr-only">{link.ariaLabel}</span>
+						<Icon name={link.icon} size={22} />
+					</a>
+				))
+			}
+		</div>
 	</div>
 </footer>
+
 <style>
-	footer {
-		padding: 2em 1em 6em 1em;
-		background: linear-gradient(var(--gray-gradient)) no-repeat var(--bg);
-		border-top: 1px solid var(--border);
-		color: rgb(var(--gray));
-		text-align: center;
+	.site-footer {
+		margin-top: auto;
+		background: var(--retro-panel);
+		border-top: 1px solid var(--retro-border-strong);
+		color: var(--retro-muted);
+		font-family: var(--font-mono);
+		font-size: 0.82rem;
 	}
+
+	.footer-inner {
+		max-width: var(--retro-max-width);
+		margin: 0 auto;
+		padding: 1rem 1.25rem;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		flex-wrap: wrap;
+	}
+
+	.footer-status {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.55rem;
+		flex-wrap: wrap;
+	}
+
+	.status-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 1px;
+		background: var(--retro-signal);
+	}
+
+	.footer-status a {
+		color: var(--retro-muted);
+		text-decoration: none;
+	}
+
+	.footer-status a:hover {
+		color: var(--retro-accent);
+	}
+
+	.sep {
+		color: var(--retro-border-strong);
+	}
+
 	.social-links {
 		display: flex;
-		justify-content: center;
-		gap: 1em;
-		margin-top: 1em;
+		align-items: center;
+		gap: 0.75rem;
 	}
+
 	.social-links a {
+		display: inline-flex;
+		color: var(--retro-muted);
 		text-decoration: none;
-		color: rgb(var(--gray));
+		transition: color 0.15s ease;
 	}
+
 	.social-links a:hover {
-		color: rgb(var(--gray-dark));
+		color: var(--retro-heading);
 	}
 </style>

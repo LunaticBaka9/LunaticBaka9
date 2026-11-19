@@ -1,14 +1,22 @@
 ---
-// Import the global.css file here so that it is included on
-// all pages through the use of the <BaseHead /> component.
-import '../styles/global.css';
+/**
+ * 模块用途：
+ *   页面 `<head>` 全局元信息与基础样式挂载组件。
+ *   负责注入复古主题样式（retro.css）、首屏无闪烁主题初始化脚本、字体预加载及 SEO/OG 标签。
+ *
+ * 使用方法：
+ *   在 `BaseLayout.astro` 的 `<head>` 内调用：
+ *   <BaseHead title={title} description={description} image={image} />
+ */
+
+import '../styles/retro.css';
 import type { ImageMetadata } from 'astro';
 import FallbackImage from '../assets/blog-placeholder-1.jpg';
 import { SITE_TITLE } from '../consts';
 import { withBase } from '../utils/paths';
 import { Font } from 'astro:assets';
 
-interface Props {
+export interface Props {
 	title: string;
 	description: string;
 	image?: ImageMetadata;

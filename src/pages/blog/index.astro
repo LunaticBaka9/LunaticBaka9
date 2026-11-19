@@ -1,113 +1,132 @@
 ---
-import { Image } from 'astro:assets';
-import { getCollection } from 'astro:content';
-import BaseHead from '../../components/BaseHead.astro';
-import Footer from '../../components/Footer.astro';
-import FormattedDate from '../../components/FormattedDate.astro';
-import Header from '../../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
-import { withBase } from '../../utils/paths';
+/**
+ * 模块用途：
+ *   博客列表与实时检索页（/blog）。
+ *   负责读取博客集合、调用纯业务服务序列化文章摘要与阅读时长，并挂载 Vue 3 客户端筛选组件
+ *   `<FilterBar client:load />` 实现无刷新分类/关键词过滤，同时提供静态分类分流直达入口。
+ *
+ * 使用方法：
+ *   由 Astro 路由映射至 `/blog`。
+ */
 
-const posts = (await getCollection('blog')).sort(
-	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
-);
+import { getCollection } from 'astro:content';
+import FilterBar, { type FilterablePost } from '../../components/FilterBar.vue';
+import WindowCard from '../../components/WindowCard.astro';
+import { SITE_TITLE } from '../../consts';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import {
+	extractCategories,
+	resolveCategory,
+	sortPostsByDate,
+	toCategorySlug,
+} from '../../utils/blogService';
+import { withBase } from '../../utils/paths';
+import { estimateReadingTime } from '../../utils/readingTime';
+
+const sortedPosts = sortPostsByDate(await getCollection('blog'));
+const categories = extractCategories(sortedPosts);
+
+/** 统一格式化日期为 YYYY-MM-DD，便于终端列表对齐 */
+function formatIsoDate(date: Date): string {
+	const y = date.getFullYear();
+	const m = String(date.getMonth() + 1).padStart(2, '0');
+	const d = String(date.getDate()).padStart(2, '0');
+	return `${y}-${m}-${d}`;
+}
+
+const serializedPosts: FilterablePost[] = sortedPosts.map((post) => {
+	const category = resolveCategory(post);
+	const reading = estimateReadingTime(post.body ?? '');
+	return {
+		id: post.id,
+		title: post.data.title,
+		description: post.data.description,
+		dateLabel: formatIsoDate(post.data.pubDate),
+		category,
+		categoryHref: withBase(`/blog/categories/${toCategorySlug(category)}/`),
+		tags: post.data.tags ?? [],
+		readingTimeLabel: reading.label,
+		href: withBase(`/blog/${post.id}/`),
+	};
+});
 ---
 
-<!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-		<style>
-			main {
-				width: 960px;
-			}
-			ul {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 2rem;
-				list-style-type: none;
-				margin: 0;
-				padding: 0;
-			}
-			ul li {
-				width: calc(50% - 1rem);
-			}
-			ul li * {
-				text-decoration: none;
-				transition: 0.2s ease;
-			}
-			ul li:first-child {
-				width: 100%;
-				margin-bottom: 1rem;
-				text-align: center;
-			}
-			ul li:first-child img {
-				width: 100%;
-			}
-			ul li:first-child .title {
-				font-size: 2.369rem;
-			}
-			ul li img {
-				margin-bottom: 0.5rem;
-				border-radius: 12px;
-			}
-			ul li a {
-				display: block;
-			}
-			.title {
-				margin: 0;
-				color: rgb(var(--black));
-				line-height: 1;
-			}
-			.date {
-				margin: 0;
-				color: rgb(var(--gray));
-			}
-			ul li a:hover h4,
-			ul li a:hover .date {
-				color: rgb(var(--accent));
-			}
-			ul a:hover img {
-				box-shadow: var(--box-shadow);
-			}
-			@media (max-width: 720px) {
-				ul {
-					gap: 0.5em;
+<BaseLayout
+	title={`博客日志 | ${SITE_TITLE}`}
+	description="技术笔记、游戏机制实验、系统工具折腾与日常随笔归档。"
+>
+	<div class="blog-page">
+		<WindowCard title="~/blog/index.sh" status={`${sortedPosts.length} POSTS`}>
+			<a slot="header-actions" class="header-link" href={withBase('/timeline')}>
+				时间轴视角 →
+			</a>
+
+			<h1 class="page-title">博客与折腾日志</h1>
+			<p class="page-intro">
+				支持下方即时分类与关键词过滤，或通过独立分类归档页按主题浏览。
+			</p>
+
+			<nav class="category-links" aria-label="独立分类页入口">
+				<span class="cat-prefix">CATEGORIES:</span>
+				{
+					categories.map((cat) => (
+						<a
+							class="retro-tag"
+							href={withBase(`/blog/categories/${toCategorySlug(cat.name)}/`)}
+						>
+							#{cat.name} ({cat.count})
+						</a>
+					))
 				}
-				ul li {
-					width: 100%;
-					text-align: center;
-				}
-				ul li:first-child {
-					margin-bottom: 0;
-				}
-				ul li:first-child .title {
-					font-size: 1.563em;
-				}
-			}
-		</style>
-	</head>
-	<body>
-		<Header />
-		<main>
-			<section>
-				<ul>
-					{posts.map((post) => (
-						<li>
-							<a href={withBase(`/blog/${post.id}/`)}>
-								{post.data.heroImage && (
-									<Image width={720} height={360} src={post.data.heroImage} alt="" />
-								)}
-								<h4 class="title">{post.data.title}</h4>
-								<p class="date">
-									<FormattedDate date={post.data.pubDate} />
-								</p>
-							</a>
-						</li>
-					))}
-				</ul>
-			</section>
-		</main>
-		<Footer />
-	</body>
-</html>
+			</nav>
+		</WindowCard>
+
+		<WindowCard title="~/blog/filter.vue" status="INTERACTIVE">
+			<FilterBar client:load posts={serializedPosts} categories={categories} />
+		</WindowCard>
+	</div>
+</BaseLayout>
+
+<style>
+	.blog-page {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
+	.header-link {
+		color: var(--retro-accent);
+		text-decoration: none;
+	}
+
+	.header-link:hover {
+		text-decoration: underline;
+	}
+
+	.page-title {
+		margin: 0 0 0.4rem;
+	}
+
+	.page-intro {
+		margin: 0 0 0.9rem;
+		color: var(--retro-muted);
+	}
+
+	.category-links {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.45rem;
+	}
+
+	.cat-prefix {
+		font-family: var(--font-mono);
+		font-size: 0.78rem;
+		color: var(--retro-signal);
+	}
+
+	.category-links a:hover {
+		border-color: var(--retro-accent);
+		color: var(--retro-accent);
+	}
+</style>

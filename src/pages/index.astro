@@ -1,59 +1,357 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import Footer from '../components/Footer.astro';
-import Header from '../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+/**
+ * 模块用途：
+ *   站点首页（/）：极客复古控制台风格主页面。
+ *   组合“个人名片面板 + 精选作品卡片区（Featured Projects）+ 最新日志摘要区”，
+ *   仅负责页面编排与数据装配，排序与统计逻辑委托给 `src/utils/` 纯业务服务。
+ *
+ * 使用方法：
+ *   由 Astro 文件路由自动映射为站点首页 `/`。
+ */
+
+import { getCollection } from 'astro:content';
+import FormattedDate from '../components/FormattedDate.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import WindowCard from '../components/WindowCard.astro';
+import { PROFILE, SITE_DESCRIPTION, SITE_TITLE, SOCIAL_LINKS } from '../consts';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { resolveCategory, sortPostsByDate, toCategorySlug } from '../utils/blogService';
+import { withBase } from '../utils/paths';
+import { getFeaturedProjects } from '../utils/projectService';
+import { estimateReadingTime } from '../utils/readingTime';
+
+const allPosts = sortPostsByDate(await getCollection('blog'));
+const latestPosts = allPosts.slice(0, 4).map((post) => {
+	const category = resolveCategory(post);
+	const reading = estimateReadingTime(post.body ?? '');
+	return {
+		id: post.id,
+		title: post.data.title,
+		description: post.data.description,
+		pubDate: post.data.pubDate,
+		category,
+		categoryHref: withBase(`/blog/categories/${toCategorySlug(category)}/`),
+		readingLabel: reading.label,
+		href: withBase(`/blog/${post.id}/`),
+	};
+});
+
+const allProjects = await getCollection('projects');
+const featuredProjects = getFeaturedProjects(allProjects, 4);
 ---
 
-<!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-	</head>
-	<body>
-		<Header />
-		<main>
-			<h1></h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This
-				template serves as a lightweight, minimally-styled starting point for anyone looking to
-				build a personal website, blog, or portfolio with Astro.
-			</p>
-			<p>
-				This template comes with a few integrations already configured in your{' '}
-				<code>astro.config.mjs</code> file. You can customize your setup with{' '}
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like
-				Tailwind, React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>
-					Edit this page in <code>src/pages/index.astro</code>
-				</li>
-				<li>
-					Edit the site header items in <code>src/components/Header.astro</code>
-				</li>
-				<li>
-					Add your name to the footer in <code>src/components/Footer.astro</code>
-				</li>
-				<li>
-					Check out the included blog posts in <code>src/content/blog/</code>
-				</li>
-				<li>
-					Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code>
-				</li>
+<BaseLayout title={`${SITE_TITLE} | 极客复古控制台`} description={SITE_DESCRIPTION}>
+	<div class="console-stack">
+		<!-- 1. 个人名片面板 -->
+		<WindowCard title={`~/whoami — ${PROFILE.handle}`} status={PROFILE.status}>
+			<div class="profile-grid">
+				<div class="profile-main">
+					<p class="prompt-line">
+						<span class="prompt-symbol">$</span> cat profile.txt
+					</p>
+					<h1 class="hero-title">你好，我是 {SITE_TITLE}</h1>
+					<p class="hero-tagline">{PROFILE.tagline}</p>
+
+					<ul class="focus-list">
+						{
+							PROFILE.focusAreas.map((item) => (
+								<li>
+									<span class="bullet" aria-hidden="true">
+										&gt;
+									</span>
+									<span>{item}</span>
+								</li>
+							))
+						}
+					</ul>
+
+					<div class="profile-actions">
+						<a class="retro-btn" href={withBase('/projects')}>浏览全部作品 →</a>
+						<a class="retro-btn" href={withBase('/blog')}>阅读技术日志 →</a>
+						{
+							SOCIAL_LINKS.find((link) => link.icon === 'github') && (
+								<a
+									class="retro-btn"
+									href={SOCIAL_LINKS.find((link) => link.icon === 'github')?.href}
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									GitHub 主页 ↗
+								</a>
+							)
+						}
+					</div>
+				</div>
+
+				<aside class="profile-side" aria-label="系统概览">
+					<div class="stat-box">
+						<div class="stat-row">
+							<span class="stat-key">PROJECTS</span>
+							<span class="stat-val">{allProjects.length}</span>
+						</div>
+						<div class="stat-row">
+							<span class="stat-key">POSTS</span>
+							<span class="stat-val">{allPosts.length}</span>
+						</div>
+						<div class="stat-row">
+							<span class="stat-key">STACK</span>
+							<span class="stat-val">{PROFILE.stack.length} TAGS</span>
+						</div>
+					</div>
+
+					<div class="stack-panel">
+						<div class="stack-heading">CORE_STACK</div>
+						<ul class="stack-tags">
+							{PROFILE.stack.map((tech) => <li class="retro-tag">{tech}</li>)}
+						</ul>
+					</div>
+				</aside>
+			</div>
+		</WindowCard>
+
+		<!-- 2. 精选作品卡片区 -->
+		<WindowCard
+			title="~/projects/featured.dir"
+			status={`${featuredProjects.length} FEATURED`}
+		>
+			<a slot="header-actions" class="header-link" href={withBase('/projects')}>
+				ls -a ~/projects →
+			</a>
+
+			<div class="projects-grid">
+				{
+					featuredProjects.map((project) => (
+						<ProjectCard
+							title={project.data.title}
+							summary={project.data.summary}
+							status={project.data.status}
+							stack={project.data.stack}
+							demoUrl={project.data.demoUrl}
+							repoUrl={project.data.repoUrl}
+						/>
+					))
+				}
+			</div>
+		</WindowCard>
+
+		<!-- 3. 最新日志摘要区 -->
+		<WindowCard title="~/blog/latest.log" status={`TOP ${latestPosts.length}`}>
+			<a slot="header-actions" class="header-link" href={withBase('/blog')}>
+				cd ~/blog →
+			</a>
+
+			<ul class="latest-list">
+				{
+					latestPosts.map((post) => (
+						<li class="log-entry">
+							<div class="log-meta">
+								<span class="log-date">
+									<FormattedDate date={post.pubDate} />
+								</span>
+								<a class="retro-tag retro-tag--accent" href={post.categoryHref}>
+									#{post.category}
+								</a>
+								<span class="log-reading">{post.readingLabel}</span>
+							</div>
+							<h3 class="log-title">
+								<a href={post.href}>{post.title}</a>
+							</h3>
+							<p class="log-desc">{post.description}</p>
+						</li>
+					))
+				}
 			</ul>
-			<p>
-				Have fun! If you get stuck, remember to{' '}
-				<a href="https://docs.astro.build/">read the docs</a> or{' '}
-				<a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out{' '}
-				<a href="https://github.com/Charca/astro-blog-template">astro-blog-template</a> by{' '}
-				<a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-			</p>
-		</main>
-		<Footer />
-	</body>
-</html>
+		</WindowCard>
+	</div>
+</BaseLayout>
+
+<style>
+	.console-stack {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
+	.profile-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 250px;
+		gap: 1.5rem;
+		align-items: start;
+	}
+
+	.prompt-line {
+		margin: 0 0 0.45rem;
+		font-family: var(--font-mono);
+		font-size: 0.84rem;
+		color: var(--retro-muted);
+	}
+
+	.prompt-symbol {
+		color: var(--retro-signal);
+		margin-right: 0.35rem;
+	}
+
+	.hero-title {
+		margin: 0 0 0.55rem;
+	}
+
+	.hero-tagline {
+		margin: 0 0 1rem;
+		font-size: 1rem;
+		color: var(--retro-text);
+	}
+
+	.focus-list {
+		list-style: none;
+		margin: 0 0 1.25rem;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.45rem;
+		font-size: 0.93rem;
+		color: var(--retro-muted);
+	}
+
+	.focus-list li {
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.bullet {
+		font-family: var(--font-mono);
+		color: var(--retro-accent);
+		flex-shrink: 0;
+	}
+
+	.profile-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.65rem;
+	}
+
+	.profile-side {
+		display: flex;
+		flex-direction: column;
+		gap: 0.9rem;
+	}
+
+	.stat-box,
+	.stack-panel {
+		padding: 0.85rem;
+		background: var(--retro-panel-alt);
+		border: 1px solid var(--retro-border);
+		border-radius: var(--retro-radius);
+	}
+
+	.stat-box {
+		display: flex;
+		flex-direction: column;
+		gap: 0.45rem;
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+	}
+
+	.stat-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.stat-key {
+		color: var(--retro-muted);
+	}
+
+	.stat-val {
+		color: var(--retro-signal);
+		font-weight: 600;
+	}
+
+	.stack-heading {
+		margin-bottom: 0.55rem;
+		font-family: var(--font-mono);
+		font-size: 0.76rem;
+		color: var(--retro-muted);
+	}
+
+	.stack-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	.header-link {
+		color: var(--retro-accent);
+		text-decoration: none;
+	}
+
+	.header-link:hover {
+		text-decoration: underline;
+	}
+
+	.projects-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: 1rem;
+	}
+
+	.latest-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.9rem;
+	}
+
+	.log-entry {
+		padding: 0.85rem 1rem;
+		background: var(--retro-panel-alt);
+		border: 1px solid var(--retro-border);
+		border-radius: var(--retro-radius);
+		transition: border-color 0.15s ease;
+	}
+
+	.log-entry:hover {
+		border-color: var(--retro-accent);
+	}
+
+	.log-meta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.55rem;
+		margin-bottom: 0.4rem;
+		font-family: var(--font-mono);
+		font-size: 0.78rem;
+		color: var(--retro-muted);
+	}
+
+	.log-title {
+		margin: 0 0 0.3rem;
+		font-size: 1.05rem;
+	}
+
+	.log-title a {
+		color: var(--retro-heading);
+		text-decoration: none;
+	}
+
+	.log-title a:hover {
+		color: var(--retro-accent);
+	}
+
+	.log-desc {
+		margin: 0;
+		font-size: 0.92rem;
+		color: var(--retro-muted);
+	}
+
+	@media (max-width: 800px) {
+		.profile-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

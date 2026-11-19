@@ -1,0 +1,205 @@
+---
+/**
+ * 模块用途：
+ *   时间轴归档页（/timeline）。
+ *   将已发布博客文章与作品里程碑合并后按年/月（YYYY-MM）倒序渲染为垂直轴线，
+ *   方便回溯不同阶段的折腾方向；聚合逻辑委托给 `timelineService.ts`。
+ *
+ * 使用方法：
+ *   由 Astro 路由映射至 `/timeline`。
+ */
+
+import { getCollection } from 'astro:content';
+import FormattedDate from '../components/FormattedDate.astro';
+import WindowCard from '../components/WindowCard.astro';
+import { SITE_TITLE } from '../consts';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../utils/paths';
+import { buildTimelineGroups } from '../utils/timelineService';
+
+const [posts, projects] = await Promise.all([
+	getCollection('blog'),
+	getCollection('projects'),
+]);
+
+const timelineGroups = buildTimelineGroups({
+	posts,
+	projects,
+	resolveUrl: withBase,
+});
+
+const totalEntries = timelineGroups.reduce((sum, group) => sum + group.items.length, 0);
+---
+
+<BaseLayout
+	title={`时间轴归档 | ${SITE_TITLE}`}
+	description="按年月串联的博客文章与作品里程碑折腾轨迹。"
+>
+	<div class="timeline-page">
+		<WindowCard title="~/timeline.log" status={`${totalEntries} EVENTS`}>
+			<h1 class="page-title">时间轴归档</h1>
+			<p class="page-intro">
+				按时间倒序串联已发布的日志文章与作品里程碑，记录不同阶段的兴趣与技术演进。
+			</p>
+		</WindowCard>
+
+		<div class="timeline-groups">
+			{
+				timelineGroups.map((group) => (
+					<WindowCard
+						title={`~/timeline/${group.monthKey}`}
+						status={`${group.items.length} 条`}
+					>
+						<h2 class="month-heading">{group.monthLabel}</h2>
+						<ol class="axis-list">
+							{group.items.map((item) => (
+								<li class="axis-item">
+									<span
+										class:list={[
+											'axis-node',
+											item.kind === 'project'
+												? 'axis-node--project'
+												: 'axis-node--post',
+										]}
+										aria-hidden="true"
+									/>
+									<div class="axis-body">
+										<div class="axis-meta">
+											<span class="axis-date">
+												<FormattedDate date={item.date} />
+											</span>
+											<span
+												class:list={[
+													'retro-tag',
+													{
+														'retro-tag--accent':
+															item.kind === 'project',
+													},
+												]}
+											>
+												{item.badge}
+											</span>
+										</div>
+										<h3 class="axis-title">
+											<a
+												href={item.href}
+												target={item.external ? '_blank' : undefined}
+												rel={
+													item.external
+														? 'noopener noreferrer'
+														: undefined
+												}
+											>
+												{item.title}
+												{item.external && ' ↗'}
+											</a>
+										</h3>
+										<p class="axis-summary">{item.summary}</p>
+									</div>
+								</li>
+							))}
+						</ol>
+					</WindowCard>
+				))
+			}
+		</div>
+	</div>
+</BaseLayout>
+
+<style>
+	.timeline-page,
+	.timeline-groups {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
+	.page-title {
+		margin: 0 0 0.45rem;
+	}
+
+	.page-intro {
+		margin: 0;
+		color: var(--retro-muted);
+	}
+
+	.month-heading {
+		margin: 0 0 1rem;
+		font-size: 1.12rem;
+		color: var(--retro-signal);
+	}
+
+	.axis-list {
+		position: relative;
+		list-style: none;
+		margin: 0;
+		padding: 0 0 0 1.4rem;
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		border-left: 1px dashed var(--retro-border-strong);
+	}
+
+	.axis-item {
+		position: relative;
+	}
+
+	.axis-node {
+		position: absolute;
+		left: calc(-1.4rem - 5px);
+		top: 0.45rem;
+		width: 9px;
+		height: 9px;
+		border-radius: 1px;
+		border: 1px solid var(--retro-border-strong);
+		background: var(--retro-panel);
+	}
+
+	.axis-node--project {
+		background: var(--retro-signal);
+		border-color: var(--retro-signal);
+	}
+
+	.axis-node--post {
+		background: var(--retro-accent);
+		border-color: var(--retro-accent);
+	}
+
+	.axis-body {
+		padding: 0.8rem 0.95rem;
+		background: var(--retro-panel-alt);
+		border: 1px solid var(--retro-border);
+		border-radius: var(--retro-radius);
+	}
+
+	.axis-meta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.55rem;
+		margin-bottom: 0.35rem;
+		font-family: var(--font-mono);
+		font-size: 0.78rem;
+		color: var(--retro-muted);
+	}
+
+	.axis-title {
+		margin: 0 0 0.25rem;
+		font-size: 1.02rem;
+	}
+
+	.axis-title a {
+		color: var(--retro-heading);
+		text-decoration: none;
+	}
+
+	.axis-title a:hover {
+		color: var(--retro-accent);
+	}
+
+	.axis-summary {
+		margin: 0;
+		font-size: 0.9rem;
+		color: var(--retro-muted);
+	}
+</style>

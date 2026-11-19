@@ -1,0 +1,102 @@
+---
+/**
+ * 模块用途：
+ *   完整作品集与实验归档页（/projects）。
+ *   按“可玩 Demo / 网页应用”、“系统与工具折腾”、“实验性小玩意”分块呈现所有作品，
+ *   并开启架构说明与踩坑摘要展示；分组与排序逻辑由 `projectService.ts` 负责。
+ *
+ * 使用方法：
+ *   由 Astro 路由映射至 `/projects`，在 `src/content/projects/` 新增 Markdown 条目即可自动收录。
+ */
+
+import { getCollection } from 'astro:content';
+import ProjectCard from '../components/ProjectCard.astro';
+import WindowCard from '../components/WindowCard.astro';
+import { SITE_TITLE } from '../consts';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { groupProjectsByType } from '../utils/projectService';
+
+const allProjects = await getCollection('projects');
+const groupedProjects = groupProjectsByType(allProjects);
+---
+
+<BaseLayout
+	title={`作品集 | ${SITE_TITLE}`}
+	description="完整作品、可玩 Demo、系统工具与实验性小玩意归档。"
+>
+	<div class="projects-page">
+		<WindowCard title="~/projects/README.md" status={`${allProjects.length} ITEMS`}>
+			<h1 class="page-title">作品与实验归档</h1>
+			<p class="page-intro">
+				按形态划分为可玩原型、系统折腾与小型实验三类。每张卡片附带简短架构说明或踩坑记录，
+				方便回头复盘思路。
+			</p>
+		</WindowCard>
+
+		{
+			groupedProjects.map((group) => (
+				<WindowCard
+					title={group.meta.windowPath}
+					status={`${group.items.length} ITEMS`}
+				>
+					<div class="group-header">
+						<h2>{group.meta.title}</h2>
+						<p>{group.meta.description}</p>
+					</div>
+
+					<div class="cards-grid">
+						{group.items.map((project) => (
+							<ProjectCard
+								title={project.data.title}
+								summary={project.data.summary}
+								status={project.data.status}
+								stack={project.data.stack}
+								demoUrl={project.data.demoUrl}
+								repoUrl={project.data.repoUrl}
+								notes={project.data.notes}
+								showNotes={true}
+							/>
+						))}
+					</div>
+				</WindowCard>
+			))
+		}
+	</div>
+</BaseLayout>
+
+<style>
+	.projects-page {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
+	.page-title {
+		margin: 0 0 0.45rem;
+	}
+
+	.page-intro {
+		margin: 0;
+		color: var(--retro-muted);
+	}
+
+	.group-header {
+		margin-bottom: 1rem;
+	}
+
+	.group-header h2 {
+		margin: 0 0 0.25rem;
+	}
+
+	.group-header p {
+		margin: 0;
+		font-size: 0.92rem;
+		color: var(--retro-muted);
+	}
+
+	.cards-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		gap: 1rem;
+	}
+</style>

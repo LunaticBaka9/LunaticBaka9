@@ -1,20 +1,63 @@
 ---
+/**
+ * 模块用途：
+ *   博客文章详情页路由（/blog/[...slug]）。
+ *   负责静态路径生成、通过纯业务模块计算阅读时长与上下篇导航，并交由 `PostLayout` 渲染复古档案阅读器。
+ *
+ * 使用方法：
+ *   由 Astro 自动为 `src/content/blog/` 下的每篇非草稿文章生成静态详情页。
+ */
+
 import { type CollectionEntry, getCollection, render } from 'astro:content';
-import BlogPost from '../../layouts/BlogPost.astro';
+import PostLayout, { type AdjacentPostLink } from '../../layouts/PostLayout.astro';
+import { getAdjacentPosts, resolveCategory, sortPostsByDate } from '../../utils/blogService';
+import { withBase } from '../../utils/paths';
+import { estimateReadingTime } from '../../utils/readingTime';
 
 export async function getStaticPaths() {
-	const posts = await getCollection('blog');
-	return posts.map((post) => ({
-		params: { slug: post.id },
-		props: post,
-	}));
-}
-type Props = CollectionEntry<'blog'>;
+	const sortedPosts = sortPostsByDate(await getCollection('blog'));
 
-const post = Astro.props;
+	return sortedPosts.map((post) => {
+		const { prev, next } = getAdjacentPosts(sortedPosts, post.id);
+		return {
+			params: { slug: post.id },
+			props: {
+				post,
+				prevPost: prev
+					? { title: prev.data.title, href: withBase(`/blog/${prev.id}/`) }
+					: null,
+				nextPost: next
+					? { title: next.data.title, href: withBase(`/blog/${next.id}/`) }
+					: null,
+			},
+		};
+	});
+}
+
+interface Props {
+	post: CollectionEntry<'blog'>;
+	prevPost: AdjacentPostLink | null;
+	nextPost: AdjacentPostLink | null;
+}
+
+const { post, prevPost, nextPost } = Astro.props;
 const { Content } = await render(post);
+const category = resolveCategory(post);
+const reading = estimateReadingTime(post.body ?? '');
 ---
 
-<BlogPost {...post.data}>
+<PostLayout
+	title={post.data.title}
+	description={post.data.description}
+	pubDate={post.data.pubDate}
+	updatedDate={post.data.updatedDate}
+	heroImage={post.data.heroImage}
+	category={category}
+	tags={post.data.tags}
+	wordCount={reading.wordCount}
+	readingTimeLabel={reading.label}
+	prevPost={prevPost}
+	nextPost={nextPost}
+>
 	<Content />
-</BlogPost>
+</PostLayout>

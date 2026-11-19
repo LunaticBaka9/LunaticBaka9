@@ -1,0 +1,51 @@
+---
+/**
+ * 模块用途：
+ *   全站通用基础页面布局（BaseLayout），统一拼装 HTML 骨架、元信息（BaseHead）、
+ *   顶部终端导航栏（Header）、主内容插槽与底部状态栏（Footer）。
+ *
+ * 使用方法：
+ *   <BaseLayout title="首页 | LunaticBaka9" description="页面描述">
+ *     <WindowCard title="~/hello">...</WindowCard>
+ *   </BaseLayout>
+ */
+
+import type { ImageMetadata } from 'astro';
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+
+export interface Props {
+	/** 页面标题，默认取站点标题 */
+	title?: string;
+	/** 页面摘要描述，默认取站点简介 */
+	description?: string;
+	/** 可选分享预览图 */
+	image?: ImageMetadata;
+	/** 文档语言属性，默认 zh-CN */
+	lang?: string;
+}
+
+const {
+	title = SITE_TITLE,
+	description = SITE_DESCRIPTION,
+	image,
+	lang = 'zh-CN',
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang={lang}>
+	<head>
+		<BaseHead title={title} description={description} image={image} />
+		<slot name="head" />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<slot />
+		</main>
+		<Footer />
+	</body>
+</html>
