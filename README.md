@@ -1,4 +1,4 @@
-<h1 align="center">👋 你好，我是 LunaticBaka9！</h1>
+<h1 align="center"> 你好，我是 LunaticBaka9！</h1>
 
 ### 🧑‍💻 关于我
 
