@@ -44,19 +44,19 @@
 
 <div align="center">
   <!-- 左侧：综合数据统计（支持亮/暗模式自动切换） -->
-  <a href="https://github.com/你的用户名">
+  <a href="https://github.com/LunaticBaka9">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://github-readme-stats.vercel.app/api?username=你的用户名&show_icons=true&theme=tokyonight&hide_border=true&bg_color=0D1117" />
-      <source media="(prefers-color-scheme: light)" srcset="https://github-readme-stats.vercel.app/api?username=你的用户名&show_icons=true&theme=default&hide_border=true" />
-      <img height="170em" src="https://github-readme-stats.vercel.app/api?username=你的用户名&show_icons=true&theme=tokyonight&hide_border=true" alt="GitHub Stats" />
+      <source media="(prefers-color-scheme: dark)" srcset="https://github-readme-stats.vercel.app/api?username=LunaticBaka9&show_icons=true&theme=tokyonight&hide_border=true&bg_color=0D1117" />
+      <source media="(prefers-color-scheme: light)" srcset="https://github-readme-stats.vercel.app/api?username=LunaticBaka9&show_icons=true&theme=default&hide_border=true" />
+      <img height="170em" src="https://github-readme-stats.vercel.app/api?username=LunaticBaka9&show_icons=true&theme=tokyonight&hide_border=true" alt="GitHub Stats" />
     </picture>
   </a>
   <!-- 右侧：常用语言占比（支持亮/暗模式自动切换） -->
-  <a href="https://github.com/你的用户名">
+  <a href="https://github.com/LunaticBaka9">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://github-readme-stats.vercel.app/api/top-langs/?username=你的用户名&layout=compact&theme=tokyonight&hide_border=true&bg_color=0D1117" />
-      <source media="(prefers-color-scheme: light)" srcset="https://github-readme-stats.vercel.app/api/top-langs/?username=你的用户名&layout=compact&theme=default&hide_border=true" />
-      <img height="170em" src="https://github-readme-stats.vercel.app/api/top-langs/?username=你的用户名&layout=compact&theme=tokyonight&hide_border=true" alt="Top Languages" />
+      <source media="(prefers-color-scheme: dark)" srcset="https://github-readme-stats.vercel.app/api/top-langs/?username=LunaticBaka9&layout=compact&theme=tokyonight&hide_border=true&bg_color=0D1117" />
+      <source media="(prefers-color-scheme: light)" srcset="https://github-readme-stats.vercel.app/api/top-langs/?username=LunaticBaka9&layout=compact&theme=default&hide_border=true" />
+      <img height="170em" src="https://github-readme-stats.vercel.app/api/top-langs/?username=LunaticBaka9&layout=compact&theme=tokyonight&hide_border=true" alt="Top Languages" />
     </picture>
   </a>
 </div>
@@ -68,9 +68,9 @@
 <div align="center">
   <!-- 贪吃蛇动画：自动读取 output 分支生成的 SVG，同样支持亮/暗双皮肤 -->
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/你的用户名/你的用户名/output/github-contribution-grid-snake-dark.svg" />
-    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/你的用户名/你的用户名/output/github-contribution-grid-snake.svg" />
-    <img alt="github contribution grid snake animation" src="https://raw.githubusercontent.com/你的用户名/你的用户名/output/github-contribution-grid-snake.svg" />
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/LunaticBaka9/LunaticBaka9/output/github-contribution-grid-snake-dark.svg" />
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/LunaticBaka9/LunaticBaka9/output/github-contribution-grid-snake.svg" />
+    <img alt="github contribution grid snake animation" src="https://raw.githubusercontent.com/LunaticBaka9/LunaticBaka9/output/github-contribution-grid-snake.svg" />
   </picture>
 </div>
 
