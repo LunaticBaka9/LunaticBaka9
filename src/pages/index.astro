@@ -40,7 +40,7 @@ const allProjects = await getCollection('projects');
 const featuredProjects = getFeaturedProjects(allProjects, 4);
 ---
 
-<BaseLayout title={`${SITE_TITLE} | 极客复古控制台`} description={SITE_DESCRIPTION}>
+<BaseLayout title={`个人博客 | ${SITE_TITLE}`} description={SITE_DESCRIPTION}>
 	<div class="console-stack">
 		<!-- 1. 个人名片面板 -->
 		<WindowCard title={`~/whoami — ${PROFILE.handle}`} status={PROFILE.status}>
